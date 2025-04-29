@@ -65,7 +65,7 @@ def histograma_dark(total_pixels):
                 proporcao = (camada_dark[quant][x][y] - minimo) * 255 / (maximo - minimo)
                 if proporcao > 1:
                     proporcao = 1
-                p = int(255 * proporcao)
+                p = 255 - int(255 * proporcao)
                 imagem_png.putpixel((x, y), (p, p, p))
                 aux_matriz[x][y] = p
 
@@ -85,12 +85,12 @@ def histograma_dark(total_pixels):
         eixo[1].plot(eixo_x, eixo_y, color = 'blue')
 
         plt.suptitle(f'DARK {quant + 1}')
-        eixo[0].set_title('Imagem dark')
+        eixo[0].set_title('Imagem dark', fontsize = 12)
 
-        eixo[1].set_title('Histograma')
-        eixo[1].set_xlabel('Intensidade do pixel')
-        eixo[1].set_ylabel('Frequência relativa (%)')
-        #eixo[1].set_yticks(arange(0, 110, 10))
+        eixo[1].set_title('Histograma', fontsize = 12)
+        eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
+        eixo[1].set_ylabel('Frequência relativa (%)', fontsize = 10)
+        eixo[1].set_yscale('log')
 
         plt.savefig(f'Graficos\\Histograma_dark_{quant + 1}.png', dpi = 400)
         plt.close()
@@ -119,7 +119,7 @@ def histograma_dark_medio(total_pixels):
             proporcao = (media_dark[x][y] - minimo) * 255 / (maximo - minimo)
             if proporcao > 1:
                 proporcao = 1
-            p = int(255 * proporcao)
+            p = 255 - int(255 * proporcao)
             imagem_png.putpixel((x, y), (p, p, p))
             aux_matriz[x][y] = p
 
@@ -139,12 +139,12 @@ def histograma_dark_medio(total_pixels):
     eixo[1].plot(eixo_x, eixo_y, color = 'blue')
 
     plt.suptitle(f'DARK MÉDIO')
-    eixo[0].set_title('Imagem dark')
+    eixo[0].set_title('Imagem dark', fontsize = 12)
 
-    eixo[1].set_title('Histograma')
-    eixo[1].set_xlabel('Intensidade do pixel')
-    eixo[1].set_ylabel('Frequência relativa (%)')
-    #eixo[1].set_yticks(arange(0, 110, 10))
+    eixo[1].set_title('Histograma', fontsize = 12)
+    eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
+    eixo[1].set_ylabel('Frequência relativa (%)', fontsize = 10)
+    eixo[1].set_yscale('log')
 
     plt.savefig('Graficos\\Histograma_dark_medio.png', dpi = 400)
     plt.close()
@@ -195,12 +195,12 @@ def histograma_flat(total_pixels):
         eixo[1].plot(eixo_x, eixo_y, color = 'blue')
 
         plt.suptitle(f'FLAT {quant + 1}')
-        eixo[0].set_title('Imagem flat')
+        eixo[0].set_title('Imagem flat', fontsize = 12)
 
-        eixo[1].set_title('Histograma')
-        eixo[1].set_xlabel('Intensidade do pixel')
-        eixo[1].set_ylabel('Frequência relativa (%)')
-        #eixo[1].set_yticks(arange(0, 110, 10))
+        eixo[1].set_title('Histograma', fontsize = 12)
+        eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
+        eixo[1].set_ylabel('Frequência relativa (%)', fontsize = 10)
+        eixo[1].set_yscale('log')
 
         plt.savefig(f'Graficos\\Histograma_flat_{quant + 1}.png', dpi = 400)
         plt.close()
@@ -249,12 +249,12 @@ def histograma_flat_medio(total_pixels):
     eixo[1].plot(eixo_x, eixo_y, color = 'blue')
 
     plt.suptitle(f'FLAT MÉDIO')
-    eixo[0].set_title('Imagem flat')
+    eixo[0].set_title('Imagem flat', fontsize = 12)
 
-    eixo[1].set_title('Histograma')
-    eixo[1].set_xlabel('Intensidade do pixel')
-    eixo[1].set_ylabel('Frequência relativa (%)')
-    #eixo[1].set_yticks(arange(0, 110, 10))
+    eixo[1].set_title('Histograma', fontsize = 12)
+    eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
+    eixo[1].set_ylabel('Frequência relativa (%)', fontsize = 10)
+    eixo[1].set_yscale('log')
 
     plt.savefig('Graficos\\Histograma_flat_medio.png', dpi = 400)
     plt.close()
@@ -282,22 +282,20 @@ def histograma_imagem(num_arquivo, vetor_hist_bruto, vetor_hist_equal, total_pix
 
     imagem = imread(f'Imagens_equalizadas\\Imagem_equalizada_{num_arquivo + 1}.png')
     eixos[1][0].imshow(imagem)
-    eixos[1][0].set_title('Imagem equalizada')
+    eixos[1][0].set_title('Imagem equalizada', fontsize = 12)
 
     eixos[0][1].plot(x_bruto, y_bruto, color = 'blue')
-    eixos[0][1].set_title('Histograma')
-    eixos[0][1].set_xlabel('Intensidade do pixel')
-    eixos[0][1].set_ylabel('Frequência relativa (%)')
-    #eixos[0][1].set_xticks(arange(0, 256, 25))
-    #eixos[0][1].set_yticks(arange(0, 110, 10))
+    eixos[0][1].set_title('Histograma', fontsize = 12)
+    eixos[0][1].set_xlabel('Intensidade do pixel', fontsize = 10)
+    eixos[0][1].set_ylabel('Frequência relativa (%)', fontsize = 10)
+    eixos[0][1].set_yscale('log')
     eixos[0][1].grid(True)
 
     eixos[1][1].plot(x_equal, y_equal, color = 'blue')
-    eixos[1][1].set_title('Histograma')
-    eixos[1][1].set_xlabel('Intensidade do pixel')
-    eixos[1][1].set_ylabel('Frequência relativa (%)')
-    #eixos[1][1].set_xticks(arange(0, 256, 25))
-    #eixos[1][1].set_yticks(arange(0, 110, 10))
+    eixos[1][1].set_title('Histograma', fontsize = 12)
+    eixos[1][1].set_xlabel('Intensidade do pixel', fontsize = 10)
+    eixos[1][1].set_ylabel('Frequência relativa (%)', fontsize = 10)
+    eixos[1][1].set_yscale('log')
     eixos[1][1].grid(True)
 
     plt.suptitle(f'IMAGEM {num_arquivo + 1}')
