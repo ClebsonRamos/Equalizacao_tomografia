@@ -4,7 +4,7 @@ from PIL import Image
 from matplotlib import pyplot as plt
 from skimage.io import imread
 
-tam_imagem = (10, 5) # Tamanho das imagens dos gráficos.
+tam_imagem = (10, 10) # Tamanho das imagens dos gráficos.
 
 def extracao_dos_dados(nome_camada, quantidade_arquivos):
     for i in range(quantidade_arquivos):
