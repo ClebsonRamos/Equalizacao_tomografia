@@ -41,9 +41,8 @@ def extracao_dos_dados(nome_camada, quantidade_arquivos):
         system('cls')
 
 
-def histograma_dark(total_pixels):
+def histograma_dark():
     imagem_png = Image.new('RGB', (largura, altura), (0, 0, 0))
-    aux_matriz = zeros((largura, altura), dtype = 'i')
 
     for quant in range(quantidade_dark):
         system('cls')
@@ -67,20 +66,17 @@ def histograma_dark(total_pixels):
                     proporcao = 1
                 p = 255 - int(255 * proporcao)
                 imagem_png.putpixel((x, y), (p, p, p))
-                aux_matriz[x][y] = p
 
-        eixo_x = arange(0, 256, 1)
-        eixo_y = arange(0, 256, 1)
+        eixo_x = arange(0, maximo + 1, 1)
+        eixo_y = arange(0, maximo + 1, 1)
         for i in range(len(eixo_y)):
             eixo_y[i] = 0
 
         for x in range(largura):
             for y in range(altura):
-                aux_pixel = aux_matriz[x][y]
+                aux_pixel = camada_dark[quant][x][y]
                 eixo_y[aux_pixel] += 1
         
-        eixo_y = 100 * eixo_y / total_pixels
-
         eixo[0].imshow(imagem_png)
         eixo[1].plot(eixo_x, eixo_y, color = 'blue')
 
@@ -89,7 +85,7 @@ def histograma_dark(total_pixels):
 
         eixo[1].set_title('Histograma', fontsize = 12)
         eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
-        eixo[1].set_ylabel('Frequência relativa (%)', fontsize = 10)
+        eixo[1].set_ylabel('Frequência absoluta', fontsize = 10)
         eixo[1].set_yscale('log')
 
         plt.savefig(f'Graficos\\Histograma_dark_{quant + 1}.png', dpi = 400)
@@ -97,12 +93,11 @@ def histograma_dark(total_pixels):
         del figura
 
 
-def histograma_dark_medio(total_pixels):
+def histograma_dark_medio():
     system('cls')
     print('Criando histograma do dark médio...')
 
     imagem_png = Image.new('RGB', (largura, altura), (0, 0, 0))
-    aux_matriz = zeros((largura, altura), dtype = 'i')
     figura, eixo = plt.subplots(nrows = 1, ncols = 2, figsize = tam_imagem)
     plt.subplots_adjust(left = 0.06, bottom = 0.11, right = 0.95, top = 0.88, wspace = 0.229, hspace = 0.45)
 
@@ -121,20 +116,17 @@ def histograma_dark_medio(total_pixels):
                 proporcao = 1
             p = 255 - int(255 * proporcao)
             imagem_png.putpixel((x, y), (p, p, p))
-            aux_matriz[x][y] = p
 
-    eixo_x = arange(0, 256, 1)
-    eixo_y = arange(0, 256, 1)
+    eixo_x = arange(0, maximo + 1, 1)
+    eixo_y = arange(0, maximo + 1, 1)
     for i in range(len(eixo_y)):
         eixo_y[i] = 0
 
     for x in range(largura):
         for y in range(altura):
-            aux_pixel = aux_matriz[x][y]
+            aux_pixel = media_dark[x][y]
             eixo_y[aux_pixel] += 1
     
-    eixo_y = 100 * eixo_y / total_pixels
-
     eixo[0].imshow(imagem_png)
     eixo[1].plot(eixo_x, eixo_y, color = 'blue')
 
@@ -143,7 +135,7 @@ def histograma_dark_medio(total_pixels):
 
     eixo[1].set_title('Histograma', fontsize = 12)
     eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
-    eixo[1].set_ylabel('Frequência relativa (%)', fontsize = 10)
+    eixo[1].set_ylabel('Frequência absoluta', fontsize = 10)
     eixo[1].set_yscale('log')
 
     plt.savefig('Graficos\\Histograma_dark_medio.png', dpi = 400)
@@ -151,9 +143,8 @@ def histograma_dark_medio(total_pixels):
     del figura
 
     
-def histograma_flat(total_pixels):
+def histograma_flat():
     imagem_png = Image.new('RGB', (largura, altura), (0, 0, 0))
-    aux_matriz = zeros((largura, altura), dtype = 'i')
 
     for quant in range(quantidade_flat):
         system('cls')
@@ -177,20 +168,17 @@ def histograma_flat(total_pixels):
                     proporcao = 1
                 p = int(255 * proporcao)
                 imagem_png.putpixel((x, y), (p, p, p))
-                aux_matriz[x][y] = p
 
-        eixo_x = arange(0, 256, 1)
-        eixo_y = arange(0, 256, 1)
+        eixo_x = arange(0, maximo + 1, 1)
+        eixo_y = arange(0, maximo + 1, 1)
         for i in range(len(eixo_y)):
             eixo_y[i] = 0
 
         for x in range(largura):
             for y in range(altura):
-                aux_pixel = aux_matriz[x][y]
+                aux_pixel = camada_flat[quant][x][y]
                 eixo_y[aux_pixel] += 1
         
-        eixo_y = 100 * eixo_y / total_pixels
-
         eixo[0].imshow(imagem_png)
         eixo[1].plot(eixo_x, eixo_y, color = 'blue')
 
@@ -199,7 +187,7 @@ def histograma_flat(total_pixels):
 
         eixo[1].set_title('Histograma', fontsize = 12)
         eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
-        eixo[1].set_ylabel('Frequência relativa (%)', fontsize = 10)
+        eixo[1].set_ylabel('Frequência absoluta', fontsize = 10)
         eixo[1].set_yscale('log')
 
         plt.savefig(f'Graficos\\Histograma_flat_{quant + 1}.png', dpi = 400)
@@ -207,12 +195,11 @@ def histograma_flat(total_pixels):
         del figura
 
 
-def histograma_flat_medio(total_pixels):
+def histograma_flat_medio():
     system('cls')
     print('Criando histograma do flat médio...')
 
     imagem_png = Image.new('RGB', (largura, altura), (0, 0, 0))
-    aux_matriz = zeros((largura, altura), dtype = 'i')
     figura, eixo = plt.subplots(nrows = 1, ncols = 2, figsize = tam_imagem)
     plt.subplots_adjust(left = 0.06, bottom = 0.11, right = 0.95, top = 0.88, wspace = 0.229, hspace = 0.45)
 
@@ -231,19 +218,16 @@ def histograma_flat_medio(total_pixels):
                 proporcao = 1
             p = int(255 * proporcao)
             imagem_png.putpixel((x, y), (p, p, p))
-            aux_matriz[x][y] = p
 
-    eixo_x = arange(0, 256, 1)
-    eixo_y = arange(0, 256, 1)
+    eixo_x = arange(0, maximo + 1, 1)
+    eixo_y = arange(0, maximo + 1, 1)
     for i in range(len(eixo_y)):
         eixo_y[i] = 0
 
     for x in range(largura):
         for y in range(altura):
-            aux_pixel = aux_matriz[x][y]
+            aux_pixel = media_flat[x][y]
             eixo_y[aux_pixel] += 1
-    
-    eixo_y = 100 * eixo_y / total_pixels
 
     eixo[0].imshow(imagem_png)
     eixo[1].plot(eixo_x, eixo_y, color = 'blue')
@@ -253,7 +237,7 @@ def histograma_flat_medio(total_pixels):
 
     eixo[1].set_title('Histograma', fontsize = 12)
     eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
-    eixo[1].set_ylabel('Frequência relativa (%)', fontsize = 10)
+    eixo[1].set_ylabel('Frequência absoluta', fontsize = 10)
     eixo[1].set_yscale('log')
 
     plt.savefig('Graficos\\Histograma_flat_medio.png', dpi = 400)
@@ -270,10 +254,9 @@ def histograma_imagem(num_arquivo, vetor_hist_bruto, vetor_hist_equal, total_pix
 
     x_bruto = arange(0, len(vetor_hist_bruto), 1)
     x_equal = arange(0, len(vetor_hist_equal), 1)
-    y_bruto = linspace(0, len(vetor_hist_bruto), 256)
-    y_equal = linspace(0, len(vetor_hist_bruto), 256)
-    for i in range(len(x_bruto)):
-        y_bruto[i] = 100 * vetor_hist_bruto[i] / total_pixels
+    y_equal = linspace(0, len(vetor_hist_bruto) + 1, 256)
+
+    for i in range(len(x_equal)):
         y_equal[i] = 100 * vetor_hist_equal[i] / total_pixels
 
     imagem = imread(f'Imagens_brutas\\Imagem_bruta_{num_arquivo + 1}.png')
@@ -284,10 +267,10 @@ def histograma_imagem(num_arquivo, vetor_hist_bruto, vetor_hist_equal, total_pix
     eixos[1][0].imshow(imagem)
     eixos[1][0].set_title('Imagem equalizada', fontsize = 12)
 
-    eixos[0][1].plot(x_bruto, y_bruto, color = 'blue')
+    eixos[0][1].plot(x_bruto, vetor_hist_bruto, color = 'blue')
     eixos[0][1].set_title('Histograma', fontsize = 12)
     eixos[0][1].set_xlabel('Intensidade do pixel', fontsize = 10)
-    eixos[0][1].set_ylabel('Frequência relativa (%)', fontsize = 10)
+    eixos[0][1].set_ylabel('Frequência absoluta', fontsize = 10)
     eixos[0][1].set_yscale('log')
     eixos[0][1].grid(True)
 
@@ -356,10 +339,10 @@ for i in range(101):
 
 # Vetor de frequência de pixels.
 distribuicao_pixels_imagem_equal = []
-distribuicao_pixel_imagem_bruta = []
+#distribuicao_pixel_imagem_bruta = []
 for i in range(256):
     distribuicao_pixels_imagem_equal.append(0)
-    distribuicao_pixel_imagem_bruta.append(0)
+    #distribuicao_pixel_imagem_bruta.append(0)
 
 pixels_bugados_acima = []
 pixels_bugados_abaixo = []
@@ -396,10 +379,10 @@ for x in range(largura):
         media_flat[x][y] = soma // quantidade_flat
 
 # Histogramas para o dark e flat.
-histograma_dark(total_de_pixels)
-histograma_flat(total_de_pixels)
-histograma_dark_medio(total_de_pixels)
-histograma_flat_medio(total_de_pixels)
+histograma_dark()
+histograma_flat()
+histograma_dark_medio()
+histograma_flat_medio()
 
 # Crição da estrutura da imagem no padrão RGB.
 imagem_bruta = Image.new('RGB', (largura, altura), (0, 0, 0))
@@ -410,6 +393,10 @@ for quant_img in range(quantidade_imagem):
     aux_list = maximo_minimo_da_matriz('IMAGEM', camada_imagem, quant_img)
     maximo_imagem = aux_list[0]
     minimo_imagem = aux_list[1]
+
+    distribuicao_pixel_imagem_bruta = arange(0, maximo_imagem + 1, 1)
+    for i in range(maximo_imagem):
+        distribuicao_pixel_imagem_bruta[i] = 0
 
     # Checagem de quantidade de pixels fora do range.
     pixels_fora_do_range(quant_img)
@@ -432,7 +419,8 @@ for quant_img in range(quantidade_imagem):
             if pixel_bruto > 255:
                 pixel_bruto = 255
             distribuicao_pixels_imagem_equal[pixel] += 1
-            distribuicao_pixel_imagem_bruta[pixel_bruto] += 1
+            p = camada_imagem[quant_img][i][j]
+            distribuicao_pixel_imagem_bruta[p] += 1
             imagem_bruta.putpixel((i, j), (pixel_bruto, pixel_bruto, pixel_bruto))
             imagem_equalizada.putpixel((i, j), (pixel, pixel, pixel))
     imagem_bruta.save(f'Imagens_brutas\\Imagem_bruta_{quant_img + 1}.png')
