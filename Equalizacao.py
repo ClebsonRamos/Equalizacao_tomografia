@@ -1,444 +1,275 @@
-from numpy import zeros, arange, linspace
+import numpy as np
 from os import system
 from PIL import Image
 from matplotlib import pyplot as plt
 from skimage.io import imread
 
-tam_imagem = (10, 10) # Tamanho das imagens dos gráficos.
-
 def extracao_dos_dados(nome_camada, quantidade_arquivos):
-    for i in range(quantidade_arquivos):
+    system('cls')
+    print('RECORTE DA PORÇÃO DEFEITUOSA DA IMAGEM BRUTA')
+    for indice in range(quantidade_arquivos):
+        # Abertura dos arquivos brutos de imagem e recorte para remoção da porção com defeito.
         try:
             extensao = 'jpg'
-            arquivo_imagem = Image.open(f'Dados\\{nome_camada}_{i + 1}.{extensao}')
+            arquivo_imagem = Image.open(f'Dados\\{nome_camada}_{indice + 1}.{extensao}')
         except:
             try:
                 extensao = 'jpeg'
-                arquivo_imagem = Image.open(f'Dados\\{nome_camada}_{i + 1}.{extensao}')
+                arquivo_imagem = Image.open(f'Dados\\{nome_camada}_{indice + 1}.{extensao}')
             except:
                 try:
                     extensao = 'png'
-                    arquivo_imagem = Image.open(f'Dados\\{nome_camada}_{i + 1}.{extensao}')
+                    arquivo_imagem = Image.open(f'Dados\\{nome_camada}_{indice + 1}.{extensao}')
                 except:
-                    print(f'ERRO: não foi possível abrir o arquivo {nome_camada}_{i + 1}.\n')
+                    print(f'ERRO: não foi possível abrir o arquivo {nome_camada}_{indice + 1}.\n')
                     system('pause')
                     exit()
+        print(f'\tRedimensionando o arquivo {nome_camada}_{indice + 1}.{extensao}')
+        tamanho = arquivo_imagem.size
+        imagem_reduzida = arquivo_imagem.crop((corte_da_borda, 0, tamanho[0], tamanho[1]))
+        imagem_reduzida.save(f'Dados_formatados\\imagem_cortada_{indice + 1}.{extensao}')
 
-        print(f'Lendo arquivo {nome_camada}_{i + 1}.{extensao}')
+    system('cls')
+    print('EXTRAÇÃO DOS DADOS DAS IMAGENS CORTADAS')
+    for indice in range(quantidade_arquivos):
+        # Abertura dos arquivos brutos de imagem.
+        try:
+            extensao = 'jpg'
+            arquivo_imagem = Image.open(f'Dados_formatados\\{nome_camada}_cortada_{indice + 1}.{extensao}')
+        except:
+            try:
+                extensao = 'jpeg'
+                arquivo_imagem = Image.open(f'Dados_formatados\\{nome_camada}_cortada_{indice + 1}.{extensao}')
+            except:
+                try:
+                    extensao = 'png'
+                    arquivo_imagem = Image.open(f'Dados_formatados\\{nome_camada}_cortada_{indice + 1}.{extensao}')
+                except:
+                    print(f'ERRO: não foi possível abrir o arquivo {nome_camada}_cortada_{indice + 1}.\n')
+                    system('pause')
+                    exit()
+        print(f'\tLendo arquivo {nome_camada}_cortada_{indice + 1}.{extensao}')
+        lista_de_arquivos.append(arquivo_imagem)
+        tamanho = arquivo_imagem.size
+        maximo = minimo = 0
+        for x in range(tamanho[0]):
+            for y in range(tamanho[1]):
+                camada_imagem[indice][x][y] = arquivo_imagem.getpixel((x, y))
+                if maximo < camada_imagem[indice][x][y]:
+                    maximo = camada_imagem[indice][x][y]
+                if minimo > camada_imagem[indice][x][y]:
+                    minimo = camada_imagem[indice][x][y]
+        maximo_minimo_img_bruta[indice][0] = maximo
+        maximo_minimo_img_bruta[indice][1] = minimo
+    return extensao
 
-        if nome_camada == 'dark':
-            for x in range(largura):
-                for y in range(altura):
-                    camada_dark[i][x][y] = arquivo_imagem.getpixel((x, y))
-        elif nome_camada == 'flat':
-            for x in range(largura):
-                for y in range(altura):
-                    camada_flat[i][x][y] = arquivo_imagem.getpixel((x, y))
-        elif nome_camada == 'imagem':
-            for x in range(largura):
-                for y in range(altura):
-                    camada_imagem[i][x][y] = arquivo_imagem.getpixel((x, y))
+
+def fator_de_pico(quantidade_arquivos):
+    razao = np.zeros((largura, altura))
+    for indice in range(quantidade_arquivos):
         system('cls')
+        print(f'CÁLCULO DO FATOR DE PICO - IMAGEM {indice + 1}')
+        # Cálculo da razão da imagem pelo flat.
+        print('\tCálculo da razão da imagem pelo flat.')
+        for x in range(largura):
+            for y in range(altura):
+                razao[x][y] = camada_imagem[indice][x][y] / dados_arquivo_flat[x][y]
 
+        # Monitoramento da frequência absoluta.
+        print('\tMonitoramento da frequência absoluta.')
+        aux_lista = razao.flatten() # Converte uma matriz multidimensional em um vetor unidimensional.
+        frequencia = np.unique(aux_lista, return_counts = True) # Verifica a frequência absoluta dos valores da lista.
 
-def histograma_dark():
-    imagem_png = Image.new('RGB', (largura, altura), (0, 0, 0))
+        maior_frequencia = 0
+        maior_valor_frequencia = 0.0
 
-    for quant in range(quantidade_dark):
-        system('cls')
-        print(f'Criando histograma do dark {quant + 1}...')
+        for x in range(len(frequencia[0])):
+            if maior_frequencia < frequencia[1][x]:
+                maior_frequencia = frequencia[1][x]
+                maior_valor_frequencia = frequencia[0][x]
+        '''
+        for x in range(len(frequencia[0])):
+            if maior_valor_frequencia < frequencia[0][x]:
+                maior_frequencia = frequencia[1][x]
+                maior_valor_frequencia = frequencia[0][x]
+        '''
 
-        figura, eixo = plt.subplots(nrows = 1, ncols = 2, figsize = tam_imagem)
-        plt.subplots_adjust(left = 0.06, bottom = 0.11, right = 0.95, top = 0.88, wspace = 0.229, hspace = 0.45)
+        # Gráfico da frequência da razão.
+        figura = plt.figure(figsize = (8, 4))
+        plt.plot(frequencia[0], frequencia[1], color = 'red', lw = 0.6)
+        plt.xlabel('Frequência absoluta', fontsize = 10)
+        plt.ylabel('Razão', fontsize = 10)
+        plt.title(f'RAZÃO DA IMAGEM {indice + 1}', fontsize = 12)
+        plt.grid(True)
+        figura.savefig(f'Graficos\\Frequencia_razao_{indice + 1}.png', dpi = 400)
+        plt.close(figura)
 
+        #maior_valor_frequencia = max(frequencia[0]) # Linha de código para utilizar o valor máximo da razão imagem / flat.
+
+        # Cálculo do fator.
+        fator = 1 / maior_valor_frequencia
+
+        # Multiplicação da matriz razão pelo fator de correção.
+        print('\tMultiplicação da matriz razão pelo fator de correção.')
         maximo = minimo = 0
         for x in range(largura):
             for y in range(altura):
-                if maximo < camada_dark[quant][x][y]:
-                    maximo = camada_dark[quant][x][y]
-                if minimo > camada_dark[quant][x][y]:
-                    minimo = camada_dark[quant][x][y]
-        
-        for x in range(largura):
-            for y in range(altura):
-                proporcao = (camada_dark[quant][x][y] - minimo) * 255 / (maximo - minimo)
-                if proporcao > 1:
-                    proporcao = 1
-                p = 255 - int(255 * proporcao)
-                imagem_png.putpixel((x, y), (p, p, p))
-
-        eixo_x = arange(0, maximo + 1, 1)
-        eixo_y = arange(0, maximo + 1, 1)
-        for i in range(len(eixo_y)):
-            eixo_y[i] = 0
-
-        for x in range(largura):
-            for y in range(altura):
-                aux_pixel = camada_dark[quant][x][y]
-                eixo_y[aux_pixel] += 1
-        
-        eixo[0].imshow(imagem_png)
-        eixo[1].plot(eixo_x, eixo_y, color = 'blue')
-
-        plt.suptitle(f'DARK {quant + 1}')
-        eixo[0].set_title('Imagem dark', fontsize = 12)
-
-        eixo[1].set_title('Histograma', fontsize = 12)
-        eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
-        eixo[1].set_ylabel('Frequência absoluta', fontsize = 10)
-        eixo[1].set_yscale('log')
-
-        plt.savefig(f'Graficos\\Histograma_dark_{quant + 1}.png', dpi = 400)
-        plt.close()
-        del figura
+                nova_camada_imagem[indice][x][y] = int(fator * camada_imagem[indice][x][y])
+                if maximo < nova_camada_imagem[indice][x][y]:
+                    maximo = nova_camada_imagem[indice][x][y]
+                if minimo > nova_camada_imagem[indice][x][y]:
+                    minimo = nova_camada_imagem[indice][x][y]
+        maximo_minimo_img_ajustada[indice][0] = maximo
+        maximo_minimo_img_ajustada[indice][1] = minimo
 
 
-def histograma_dark_medio():
-    system('cls')
-    print('Criando histograma do dark médio...')
-
-    imagem_png = Image.new('RGB', (largura, altura), (0, 0, 0))
-    figura, eixo = plt.subplots(nrows = 1, ncols = 2, figsize = tam_imagem)
-    plt.subplots_adjust(left = 0.06, bottom = 0.11, right = 0.95, top = 0.88, wspace = 0.229, hspace = 0.45)
-
-    maximo = minimo = 0
-    for x in range(largura):
-        for y in range(altura):
-            if maximo < media_dark[x][y]:
-                maximo = media_dark[x][y]
-            if minimo > media_dark[x][y]:
-                minimo = media_dark[x][y]
-    
-    for x in range(largura):
-        for y in range(altura):
-            proporcao = (media_dark[x][y] - minimo) * 255 / (maximo - minimo)
-            if proporcao > 1:
-                proporcao = 1
-            p = 255 - int(255 * proporcao)
-            imagem_png.putpixel((x, y), (p, p, p))
-
-    eixo_x = arange(0, maximo + 1, 1)
-    eixo_y = arange(0, maximo + 1, 1)
-    for i in range(len(eixo_y)):
-        eixo_y[i] = 0
-
-    for x in range(largura):
-        for y in range(altura):
-            aux_pixel = media_dark[x][y]
-            eixo_y[aux_pixel] += 1
-    
-    eixo[0].imshow(imagem_png)
-    eixo[1].plot(eixo_x, eixo_y, color = 'blue')
-
-    plt.suptitle(f'DARK MÉDIO')
-    eixo[0].set_title('Imagem dark', fontsize = 12)
-
-    eixo[1].set_title('Histograma', fontsize = 12)
-    eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
-    eixo[1].set_ylabel('Frequência absoluta', fontsize = 10)
-    eixo[1].set_yscale('log')
-
-    plt.savefig('Graficos\\Histograma_dark_medio.png', dpi = 400)
-    plt.close()
-    del figura
-
-    
-def histograma_flat():
-    imagem_png = Image.new('RGB', (largura, altura), (0, 0, 0))
-
-    for quant in range(quantidade_flat):
+def histograma_total(quant_imagens, extensao):
+    for indice in range(quant_imagens):
         system('cls')
-        print(f'Criando histograma do flat {quant + 1}...')
+        print(f'CRIAÇÃO DOS HISTOGRAMAS - IMAGEM {indice + 1}\n\tExtração dos extremos dos dados originais.')
+        eixo_x_1 = np.arange(maximo_minimo_img_bruta[indice][1], maximo_minimo_img_bruta[indice][0] + 1, 1)
+        eixo_y_1 = np.full(len(eixo_x_1), 0)
+        eixo_x_2 = np.arange(maximo_minimo_img_ajustada[indice][1], maximo_minimo_img_ajustada[indice][0] + 1, 1)
+        eixo_y_2 = np.full(len(eixo_x_2), 0)
 
-        figura, eixo = plt.subplots(nrows = 1, ncols = 2, figsize = tam_imagem)
-        plt.subplots_adjust(left = 0.06, bottom = 0.11, right = 0.95, top = 0.88, wspace = 0.229, hspace = 0.45)
-
-        maximo = minimo = 0
+        # Monitoramento das frequências absolutas dos dados.
+        print('\tMonitoramento das frequências absolutas dos dados.')
         for x in range(largura):
             for y in range(altura):
-                if maximo < camada_flat[quant][x][y]:
-                    maximo = camada_flat[quant][x][y]
-                if minimo > camada_flat[quant][x][y]:
-                    minimo = camada_flat[quant][x][y]
+                pixel = camada_imagem[indice][x][y]
+                eixo_y_1[pixel] += 1
+                pixel = nova_camada_imagem[indice][x][y]
+                eixo_y_2[pixel] += 1
         
+        # Plotagem do gráfico.
+        print('\tPlotagem do gráfico.')
+        figura, axes = plt.subplots(nrows = 2, ncols = 2, figsize = (8, 4))
+        plt.subplots_adjust(left = 0.045, right = 0.94, hspace = 0.329)
+        imagem = imread(f'Dados_formatados\\imagem_cortada_{indice + 1}.{extensao}')
+        axes[0][0].imshow(imagem, cmap = 'gray')
+        axes[0][1].plot(eixo_x_1, eixo_y_1, color = 'blue', lw = 0.6)
+        imagem = imread(f'Imagens_equalizadas\\Imagem_ajustada_{indice + 1}.{extensao}')
+        axes[1][0].imshow(imagem, cmap = 'gray')
+        axes[1][1].plot(eixo_x_2, eixo_y_2, color = 'blue', lw = 0.6)
+        # Legendas e rótulos.
+        plt.suptitle(f'IMAGEM {indice + 1}', fontsize = 12)
+        axes[0][1].set_xlabel('Pixels', fontsize = 10)
+        axes[0][1].set_ylabel('Frequência absoluta', fontsize = 10)
+        axes[0][1].grid(True)
+        axes[1][1].set_xlabel('Pixels', fontsize = 10)
+        axes[1][1].set_ylabel('Frequência absoluta', fontsize = 10)
+        axes[1][1].grid(True)
+        axes[0][0].set_title('Imagem bruta', fontsize = 10)
+        axes[1][0].set_title('Imagem filtrada', fontsize = 10)
+        figura.savefig(f'Graficos\\Resultado_{indice + 1}.{extensao}', dpi = 400)
+        plt.close(figura)
+        # Plotagem dos gráficos sobrepostos para comparação.
+        figura_2 = plt.figure(figsize = (8, 4))
+        plt.plot(eixo_x_1, eixo_y_1, color = 'green', lw = 0.7, label = 'Imagem bruta')
+        plt.plot(eixo_x_2, eixo_y_2, color = 'red', lw = 0.7, label = 'Imagem ajustada')
+        plt.title(f'IMAGEM {indice + 1} - SOBREPOSIÇÃO', fontsize = 12)
+        plt.xlabel('Pixels', fontsize = 10)
+        plt.ylabel('Frequência absoluta', fontsize = 10)
+        plt.legend()
+        plt.grid(True)
+        figura_2.savefig(f'Graficos\\Sobrep_grafico_img_{indice + 1}.{extensao}', dpi = 400)
+        plt.close(figura)
+
+
+def importacao_dados_flat():
+    system('cls')
+    print('RECORTE DA PORÇÃO DEFEITUOSA DO ARQUIVO FLAT')
+    try:
+        extensao = 'jpg'
+        arquivo_imagem = Image.open(f'Dados\\flat.{extensao}')
+    except:
+        try:
+            extensao = 'jpeg'
+            arquivo_imagem = Image.open(f'Dados\\flat.{extensao}')
+        except:
+            try:
+                extensao = 'png'
+                arquivo_imagem = Image.open(f'Dados\\flat.{extensao}')
+            except:
+                print('ERRO: não foi possível abrir o arquivo FLAT.\n')
+                system('pause')
+                exit()
+
+    tamanho = arquivo_imagem.size
+    imagem_reduzida = arquivo_imagem.crop((corte_da_borda, 0, tamanho[0], tamanho[1]))
+    imagem_reduzida.save(f'Dados_formatados\\flat_cortado.{extensao}')
+
+    print('IMPORTAÇÃO DOS DADOS DO ARQUIVO FLAT CORTADO')
+    try:
+        extensao = 'jpg'
+        arquivo_imagem = Image.open(f'Dados_formatados\\flat_cortado.{extensao}')
+    except:
+        try:
+            extensao = 'jpeg'
+            arquivo_imagem = Image.open(f'Dados_formatados\\flat_cortado.{extensao}')
+        except:
+            try:
+                extensao = 'png'
+                arquivo_imagem = Image.open(f'Dados_formatados\\flat_cortado.{extensao}')
+            except:
+                print('ERRO: não foi possível abrir o arquivo FLAT.\n')
+                system('pause')
+                exit()
+
+    tamanho = arquivo_imagem.size
+    for x in range(tamanho[0]):
+        for y in range(tamanho[1]):
+            dados_arquivo_flat[x][y] = arquivo_imagem.getpixel((x, y))
+
+
+def plotagem_imagem_ajustada(quant_imagens, extensao):
+    arquivo_imagem = Image.new('RGB', (largura, altura), 'red')
+    for indice in range(quant_imagens):
+        # Verificação do máximo e mínimo valor da matriz.
+        system('cls')
+        print(f'PLOTAGEM DA IMAGEM AJUSTADA - IMAGEM {indice + 1}')
+        minimo = maximo_minimo_img_ajustada[indice][1]
+        maximo = maximo_minimo_img_ajustada[indice][0]
+
+        # Plotagem das imagens ajustadas.
+        print('\tPlotagem das imagens ajustadas.')
         for x in range(largura):
             for y in range(altura):
-                proporcao = (camada_flat[quant][x][y] - minimo) * 255 / (maximo - minimo)
-                if proporcao > 1:
-                    proporcao = 1
-                p = int(255 * proporcao)
-                imagem_png.putpixel((x, y), (p, p, p))
-
-        eixo_x = arange(0, maximo + 1, 1)
-        eixo_y = arange(0, maximo + 1, 1)
-        for i in range(len(eixo_y)):
-            eixo_y[i] = 0
-
-        for x in range(largura):
-            for y in range(altura):
-                aux_pixel = camada_flat[quant][x][y]
-                eixo_y[aux_pixel] += 1
-        
-        eixo[0].imshow(imagem_png)
-        eixo[1].plot(eixo_x, eixo_y, color = 'blue')
-
-        plt.suptitle(f'FLAT {quant + 1}')
-        eixo[0].set_title('Imagem flat', fontsize = 12)
-
-        eixo[1].set_title('Histograma', fontsize = 12)
-        eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
-        eixo[1].set_ylabel('Frequência absoluta', fontsize = 10)
-        eixo[1].set_yscale('log')
-
-        plt.savefig(f'Graficos\\Histograma_flat_{quant + 1}.png', dpi = 400)
-        plt.close()
-        del figura
-
-
-def histograma_flat_medio():
-    system('cls')
-    print('Criando histograma do flat médio...')
-
-    imagem_png = Image.new('RGB', (largura, altura), (0, 0, 0))
-    figura, eixo = plt.subplots(nrows = 1, ncols = 2, figsize = tam_imagem)
-    plt.subplots_adjust(left = 0.06, bottom = 0.11, right = 0.95, top = 0.88, wspace = 0.229, hspace = 0.45)
-
-    maximo = minimo = 0
-    for x in range(largura):
-        for y in range(altura):
-            if maximo < media_flat[x][y]:
-                maximo = media_flat[x][y]
-            if minimo > media_flat[x][y]:
-                minimo = media_flat[x][y]
-    
-    for x in range(largura):
-        for y in range(altura):
-            proporcao = (media_flat[x][y] - minimo) * 255 / (maximo - minimo)
-            if proporcao > 1:
-                proporcao = 1
-            p = int(255 * proporcao)
-            imagem_png.putpixel((x, y), (p, p, p))
-
-    eixo_x = arange(0, maximo + 1, 1)
-    eixo_y = arange(0, maximo + 1, 1)
-    for i in range(len(eixo_y)):
-        eixo_y[i] = 0
-
-    for x in range(largura):
-        for y in range(altura):
-            aux_pixel = media_flat[x][y]
-            eixo_y[aux_pixel] += 1
-
-    eixo[0].imshow(imagem_png)
-    eixo[1].plot(eixo_x, eixo_y, color = 'blue')
-
-    plt.suptitle(f'FLAT MÉDIO')
-    eixo[0].set_title('Imagem flat', fontsize = 12)
-
-    eixo[1].set_title('Histograma', fontsize = 12)
-    eixo[1].set_xlabel('Intensidade do pixel', fontsize = 10)
-    eixo[1].set_ylabel('Frequência absoluta', fontsize = 10)
-    eixo[1].set_yscale('log')
-
-    plt.savefig('Graficos\\Histograma_flat_medio.png', dpi = 400)
-    plt.close()
-    del figura
-
-
-def histograma_imagem(num_arquivo, vetor_hist_bruto, vetor_hist_equal, total_pixels):
-    system('cls')
-    print(f'Criando histograma da Imagem {num_arquivo + 1}...')
-
-    figura, eixos = plt.subplots(nrows = 2, ncols = 2, figsize = tam_imagem)
-    plt.subplots_adjust(left = 0.024, bottom = 0.11, right = 0.95, top = 0.88, wspace = 0.2, hspace = 0.45)
-
-    x_bruto = arange(0, len(vetor_hist_bruto), 1)
-    x_equal = arange(0, len(vetor_hist_equal), 1)
-    y_equal = linspace(0, len(vetor_hist_bruto) + 1, 256)
-
-    for i in range(len(x_equal)):
-        y_equal[i] = 100 * vetor_hist_equal[i] / total_pixels
-
-    imagem = imread(f'Imagens_brutas\\Imagem_bruta_{num_arquivo + 1}.png')
-    eixos[0][0].imshow(imagem)
-    eixos[0][0].set_title('Imagem bruta')
-
-    imagem = imread(f'Imagens_equalizadas\\Imagem_equalizada_{num_arquivo + 1}.png')
-    eixos[1][0].imshow(imagem)
-    eixos[1][0].set_title('Imagem equalizada', fontsize = 12)
-
-    eixos[0][1].plot(x_bruto, vetor_hist_bruto, color = 'blue')
-    eixos[0][1].set_title('Histograma', fontsize = 12)
-    eixos[0][1].set_xlabel('Intensidade do pixel', fontsize = 10)
-    eixos[0][1].set_ylabel('Frequência absoluta', fontsize = 10)
-    eixos[0][1].set_yscale('log')
-    eixos[0][1].grid(True)
-
-    eixos[1][1].plot(x_equal, y_equal, color = 'blue')
-    eixos[1][1].set_title('Histograma', fontsize = 12)
-    eixos[1][1].set_xlabel('Intensidade do pixel', fontsize = 10)
-    eixos[1][1].set_ylabel('Frequência relativa (%)', fontsize = 10)
-    eixos[1][1].set_yscale('log')
-    eixos[1][1].grid(True)
-
-    plt.suptitle(f'IMAGEM {num_arquivo + 1}')
-    plt.savefig(f'Graficos\\Imagem_{num_arquivo + 1}.png', dpi = 400)
-    plt.close()
-    del figura
-
-
-def maximo_minimo_da_matriz(tipo, matriz, identificador):
-    maximo_minimo = [0, 0]
-    maximo_minimo[0] = matriz[identificador][0][0]
-    maximo_minimo[1] = matriz[identificador][0][0]
-    print(f'Procurando o valor máximo da matriz {tipo} - Aguarde...')
-    for x in range(largura):
-        for y in range(altura):
-            if maximo_minimo[0] < matriz[identificador][x][y]:
-                maximo_minimo[0] = matriz[identificador][x][y]
-            if maximo_minimo[1] > matriz[identificador][x][y]:
-                maximo_minimo[1] = matriz[identificador][x][y]
-    return maximo_minimo
-
-
-def pixels_fora_do_range(identificador_imagem):
-    system('cls')
-    print('Checando pixels fora do intervalo de equalização...')
-    for x in range(largura):
-        for y in range(altura):
-            if camada_imagem[identificador_imagem][x][y] > media_flat[x][y]:
-                pixels_bugados_acima[identificador_imagem] += 1
-            if camada_imagem[identificador_imagem][x][y] < media_dark[x][y]:
-                pixels_bugados_abaixo[identificador_imagem] += 1
+                pixel = int(255 * (nova_camada_imagem[indice][x][y] + minimo) / (maximo + minimo))
+                arquivo_imagem.putpixel((x, y), (pixel, pixel, pixel))
+        # Salvando a imagem gerada.
+        print('\tSalvando a imagem gerada.')
+        arquivo_imagem.save(f'Imagens_equalizadas\\Imagem_ajustada_{indice + 1}.{extensao}')
 
 
 #-----PROGRAMA PRINCIPAL-----
 # Dimensões das imagens.
-largura = 1400
+corte_da_borda = 50
+largura = 1400 - corte_da_borda
 altura = 1200
-total_de_pixels = altura * largura
+
+lista_de_arquivos = []
+lista_de_arquivos_brutos = []
 
 # Solicitação ao usuário das quantidades de arquivos dark, flat e imagem que serão usadas.
 system('cls')
 print('PARÂMETROS INICIAIS')
-quantidade_dark = int(input('\tQuantidade de arquivos dark: '))
-quantidade_flat = int(input('\tQuantidade de arquivos flat: '))
 quantidade_imagem = int(input('\tQuantidade de arquivos de imagem: '))
 system('cls')
 
 # Matrizes para armazenamento dos dados.
-camada_dark = zeros((quantidade_dark, largura, altura), dtype = 'i')
-camada_flat = zeros((quantidade_flat, largura, altura), dtype = 'i')
-camada_imagem = zeros((quantidade_imagem, largura, altura), dtype = 'i')
-
-# Vetor para exibição de progresso em porcentagem.
-faixa_porcentagem = []
-contador = marcador_faixa_porcentagem = 0
-for i in range(101):
-    faixa_porcentagem.append(i)
-
-# Vetor de frequência de pixels.
-distribuicao_pixels_imagem_equal = []
-#distribuicao_pixel_imagem_bruta = []
-for i in range(256):
-    distribuicao_pixels_imagem_equal.append(0)
-    #distribuicao_pixel_imagem_bruta.append(0)
-
-pixels_bugados_acima = []
-pixels_bugados_abaixo = []
-for i in range(quantidade_imagem):
-    pixels_bugados_acima.append(0)
-    pixels_bugados_abaixo.append(0)
-
-# Aquisição dos dados dos arquivos dark.
-extracao_dos_dados('dark', quantidade_dark)
-
-# Aquisição dos dados dos arquivos flat.
-extracao_dos_dados('flat', quantidade_flat)
+dados_arquivo_flat = np.zeros((largura, altura), dtype = 'i')
+camada_imagem = np.zeros((quantidade_imagem, largura, altura), dtype = 'i')
+nova_camada_imagem = np.zeros((quantidade_imagem, largura, altura), dtype = 'i')
+maximo_minimo_img_bruta = np.zeros((quantidade_imagem, 2), dtype = 'i')
+maximo_minimo_img_ajustada = np.zeros((quantidade_imagem, 2), dtype = 'i')
 
 # Aquisição dos dados dos arquivos imagem.
-extracao_dos_dados('imagem', quantidade_imagem)
+importacao_dados_flat()
+extensao_das_imagens = extracao_dos_dados('imagem', quantidade_imagem)
+fator_de_pico(quantidade_imagem)
+plotagem_imagem_ajustada(quantidade_imagem, extensao_das_imagens)
+histograma_total(quantidade_imagem, extensao_das_imagens)
 
-# Dark e flat médios.
-media_dark = zeros((largura, altura), dtype = 'i')
-media_flat = zeros((largura, altura), dtype = 'i')
-
-# Cálculo dos valores médios do dark e flat.
-system('cls')
-print('Calculando os valores médios dos arquivos DARK e FLAT...')
-
-for x in range(largura):
-    for y in range(altura):
-        soma = 0
-        for i in range(quantidade_dark):
-            soma += camada_dark[i][x][y]
-        media_dark[x][y] = soma // quantidade_dark
-        soma = 0
-        for i in range(quantidade_flat):
-            soma += camada_flat[i][x][y]
-        media_flat[x][y] = soma // quantidade_flat
-
-# Histogramas para o dark e flat.
-histograma_dark()
-histograma_flat()
-histograma_dark_medio()
-histograma_flat_medio()
-
-# Crição da estrutura da imagem no padrão RGB.
-imagem_bruta = Image.new('RGB', (largura, altura), (0, 0, 0))
-imagem_equalizada = Image.new('RGB', (largura, altura), (0, 0, 0))
-
-for quant_img in range(quantidade_imagem):
-    # Mínimo do arquivo DARK.
-    aux_list = maximo_minimo_da_matriz('IMAGEM', camada_imagem, quant_img)
-    maximo_imagem = aux_list[0]
-    minimo_imagem = aux_list[1]
-
-    distribuicao_pixel_imagem_bruta = arange(0, maximo_imagem + 1, 1)
-    for i in range(maximo_imagem):
-        distribuicao_pixel_imagem_bruta[i] = 0
-
-    # Checagem de quantidade de pixels fora do range.
-    pixels_fora_do_range(quant_img)
-
-    contador = marcador_faixa_porcentagem = 0
-    for i in range(largura):
-        porcentagem = 100 * contador / total_de_pixels
-        if porcentagem > faixa_porcentagem[marcador_faixa_porcentagem]:
-            marcador_faixa_porcentagem += 1
-            system('cls')
-            print(f'Imagem_{quant_img + 1} --- Processando... [{porcentagem:.0f}%]')
-        for j in range(altura):
-            contador += 1
-            proporcao_bruta = (camada_imagem[quant_img][i][j] - minimo_imagem) * 255 / (maximo_imagem - minimo_imagem)
-            proporcao = (camada_imagem[quant_img][i][j] + media_dark[i][j]) / (media_flat[i][j] + media_dark[i][j])
-            pixel = int(255 * proporcao)
-            pixel_bruto = int(proporcao_bruta)
-            if pixel > 255:
-                pixel = 255
-            if pixel_bruto > 255:
-                pixel_bruto = 255
-            distribuicao_pixels_imagem_equal[pixel] += 1
-            p = camada_imagem[quant_img][i][j]
-            distribuicao_pixel_imagem_bruta[p] += 1
-            imagem_bruta.putpixel((i, j), (pixel_bruto, pixel_bruto, pixel_bruto))
-            imagem_equalizada.putpixel((i, j), (pixel, pixel, pixel))
-    imagem_bruta.save(f'Imagens_brutas\\Imagem_bruta_{quant_img + 1}.png')
-    imagem_equalizada.save(f'Imagens_equalizadas\\Imagem_equalizada_{quant_img + 1}.png')
-    histograma_imagem(quant_img, distribuicao_pixel_imagem_bruta, distribuicao_pixels_imagem_equal, total_de_pixels)
-    # Limpando o vetor histrograma.
-    for i in range(len(distribuicao_pixels_imagem_equal)):
-        distribuicao_pixels_imagem_equal[i] = 0
-        distribuicao_pixel_imagem_bruta[i] = 0
-
-for i in range(quantidade_imagem):
-    if pixels_bugados_acima[i] > 0 or pixels_bugados_abaixo[i] > 0:
-        porcentagem = 100 * (pixels_bugados_acima[i] + pixels_bugados_abaixo[i]) / total_de_pixels
-        print(f'O arquivo imagem_{i + 1}.png apresentou:\n\t{pixels_bugados_acima[i]} pixels acima do limite superior')
-        print(f'\t{pixels_bugados_abaixo[i]} pixels abaixo do limite superior')
-        print(f'\tPorcentagem total discrepante: {porcentagem:.3f}%\n')
-
-system('pause')
-system('cls')
-print('\nPrograma executado com sucesso.\n')
+print('\nPrograma executado com sucesso!\n')
 system('pause')
